@@ -15,8 +15,6 @@ virtualenv:
 
 env:
     # Enable python 2 and python 3 builds
-    # Note that the 2.6 build doesn't get flake8, and runs old versions of
-    # Pyglet and GLFW to make sure we deal with those correctly
     #- PYTHON=2.6 QT=pyqt TEST=standard
     - PYTHON=2.7 QT=pyqt TEST=extra
     - PYTHON=2.7 QT=pyside TEST=standard
@@ -63,9 +61,18 @@ install:
         curl http://python-distribute.org/distribute_setup.py | sudo python3 &&
         curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | sudo python3 &&
         export PIP=pip3.2 &&
+        echo which pip
+        echo which pip3
+        echo which pip3.2
+        echo which pip3.3
+        echo which pip-3
+        echo which pip-3.2
+        echo which pip-3.3
+        sudo apt-get install python3-pytest python3-flake8
         sudo ${PIP} install pytest &&
         sudo ${PIP} install flake8 &&
         export PYTEST=py.test-3.2;
+        
       fi;
     
     # Qt
