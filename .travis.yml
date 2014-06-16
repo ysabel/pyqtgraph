@@ -61,15 +61,15 @@ install:
         curl http://python-distribute.org/distribute_setup.py | sudo python3 &&
         curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | sudo python3 &&
         export PIP=pip3.2 &&
-        sudo apt-get install python3-pip
-        which pip
-        which pip3
-        which pip3.2
-        which pip3.3
-        which pip-3
-        which pip-3.2
-        which pip-3.3
-        sudo apt-get install python3-pytest python3-flake8
+        sudo apt-get install python3-pip;
+        which pip;
+        which pip3;
+        which pip3.2;
+        which pip3.3;
+        which pip-3;
+        which pip-3.2;
+        which pip-3.3;
+        sudo apt-get install python3-pytest python3-flake8;
         sudo ${PIP} install pytest &&
         sudo ${PIP} install flake8 &&
         export PYTEST=py.test-3.2;
