@@ -53,21 +53,22 @@ install:
     - if [ "${PYTHON}" == "2.7" ]; then
         travis_retry sudo apt-get -qq -y install python-numpy &&
         export PIP=`which pip` &&
-        echo "Using pip: $PIP" &&
+        echo "Using pip $PIP" &&
         sudo ${PIP} install pytest &&
         sudo ${PIP} install flake8 &&
         export PYTEST=`which py.test` &&
-        echo "Using py.test: $PYTEST";
+        echo "Using py.test $PYTEST";
       else
+        
         travis_retry sudo apt-get -qq -y install python3-numpy &&
         curl http://python-distribute.org/distribute_setup.py | sudo python3 &&
         curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | sudo python3 &&
         export PIP=`which pip3.3` &&
-        echo "Using pip: $PIP" &&
+        echo "Using pip $PIP" &&
         travis_retry sudo ${PIP} install pytest &&
         travis_retry sudo ${PIP} install flake8 &&
         export PYTEST=`which py.test-3.3` &&
-        echo "Using py.test: $PYTEST";        
+        echo "Using py.test $PYTEST";        
       fi;
     
     # Qt
@@ -75,7 +76,7 @@ install:
         if [ ${QT} == 'pyqt' ]; then
           travis_retry sudo apt-get -qq -y install python-qt4 python-qt4-gl;
         else
-          travis_retry sudo apt-get -qq -y install python-pyside.qtcore python-pyside.qtgui python-pyside.qtsvg python-pyside.qtopengl ptthon-pyside.qttest python-pyside.qtuitools;
+          travis_retry sudo apt-get -qq -y install python-pyside.qtcore python-pyside.qtgui python-pyside.qtsvg python-pyside.qtopengl python-pyside.qttest python-pyside.qtuitools;
         fi;
       elif [ "${PYTHON}" == "3.3" ]; then
         if [ ${QT} == 'pyqt' ]; then
