@@ -68,9 +68,9 @@ install:
         which pip-3;
         which pip-3.2;
         which pip-3.3;
-        sudo ${PIP} install pytest &&
-        sudo ${PIP} install flake8 &&
-        export PYTEST=py.test-3.2;
+        travis_retry sudo ${PIP} install pytest &&
+        travis_retry sudo ${PIP} install flake8 &&
+        export PYTEST=`which py.test-3.2`;
         
       fi;
     
