@@ -18,9 +18,9 @@ env:
     #- PYTHON=2.6 QT=pyqt TEST=standard
     - PYTHON=2.7 QT=pyqt TEST=extra
     - PYTHON=2.7 QT=pyside TEST=standard
-    - PYTHON=3.2 QT=pyqt TEST=standard
-    - PYTHON=3.2 QT=pyside TEST=standard
-    #- PYTHON=3.2 QT=pyqt5 TEST=standard
+    - PYTHON=3.3 QT=pyqt TEST=standard
+    - PYTHON=3.3 QT=pyside TEST=standard
+    #- PYTHON=3.3 QT=pyqt5 TEST=standard
 
 
 before_install:
@@ -62,11 +62,11 @@ install:
         travis_retry sudo apt-get -qq -y install python3-numpy &&
         curl http://python-distribute.org/distribute_setup.py | sudo python3 &&
         curl https://raw.github.com/pypa/pip/master/contrib/get-pip.py | sudo python3 &&
-        export PIP=`which pip3.2` &&
+        export PIP=`which pip3.3` &&
         echo "Using pip: $PIP" &&
         travis_retry sudo ${PIP} install pytest &&
         travis_retry sudo ${PIP} install flake8 &&
-        export PYTEST=`which py.test-3.2` &&
+        export PYTEST=`which py.test-3.3` &&
         echo "Using py.test: $PYTEST";        
       fi;
     
@@ -77,7 +77,7 @@ install:
         else
           travis_retry sudo apt-get -qq -y install python-pyside.qtcore python-pyside.qtgui python-pyside.qtsvg python-pyside.qtopengl ptthon-pyside.qttest python-pyside.qtuitools;
         fi;
-      elif [ "${PYTHON}" == "3.2" ]; then
+      elif [ "${PYTHON}" == "3.3" ]; then
         if [ ${QT} == 'pyqt' ]; then
           travis_retry sudo apt-get -qq -y install python3-pyqt4;
         elif [ ${QT} == 'pyside' ]; then
