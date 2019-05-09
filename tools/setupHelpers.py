@@ -358,18 +358,33 @@ def getGitVersion(tagPrefix):
     if not os.path.isdir(os.path.join(path, '.git')):
         return None
         
-    gitVersion = check_output(['git', 'describe', '--tags']).strip().decode('utf-8')
+    v = check_output(['git', 'describe', '--tags', '--dirty', '--match=%s*'%tagPrefix]).strip().decode('utf-8')
     
-    # any uncommitted modifications?
+    # chop off prefix
+    assert v.startswith(tagPrefix)
+    v = v[len(tagPrefix):]
+
+    # split up version parts
+    parts = v.split('-')
+    
+    # has working tree been modified?
     modified = False
-    status = check_output(['git', 'status', '--porcelain'], universal_newlines=True).strip().split('\n')
-    for line in status:
-        if line != '' and line[:2] != '??':
-            modified = True
-            break        
-                
+    if parts[-1] == 'dirty':
+        modified = True
+        parts = parts[:-1]
+        
+    # have commits been added on top of last tagged version?
+    # (git describe adds -NNN-gXXXXXXX if this is the case)
+    local = None
+    if len(parts) > 2 and re.match(r'\d+', parts[-2]) and re.match(r'g[0-9a-f]{7}', parts[-1]):
+        local = parts[-1]
+        parts = parts[:-2]
+        
+    gitVersion = '-'.join(parts)
+    if local is not None:
+        gitVersion += '+' + local
     if modified:
-        gitVersion = gitVersion + '+'
+        gitVersion += 'm'
 
     return gitVersion
 
@@ -393,11 +408,11 @@ def getVersionStrings(pkg):
     """
     
     ## Determine current version string from __init__.py
-    initVersion = getInitVersion(pkgroot='pyqtgraph')
+    initVersion = getInitVersion(pkgroot=pkg)
 
     ## If this is a git checkout, try to generate a more descriptive version string
     try:
-        gitVersion = getGitVersion(tagPrefix='pyqtgraph-')
+        gitVersion = getGitVersion(tagPrefix=pkg+'-')
     except:
         gitVersion = None
         sys.stderr.write("This appears to be a git checkout, but an error occurred "
@@ -421,11 +436,14 @@ def getVersionStrings(pkg):
     ## Finally decide on a version string to use:
     if forcedVersion is not None:
         version = forcedVersion
-    elif gitVersion is not None and getGitBranch() != 'debian': # ignore git version if this is debian branch
-        version = gitVersion
-        sys.stderr.write("Detected git commit; will use version string: '%s'\n" % version)
     else:
         version = initVersion
+        # if git says this is a modified branch, add local version information
+        if gitVersion is not None:
+            _, local = gitVersion.split('+')
+            if local != '':
+                version = version + '+' + local
+                sys.stderr.write("Detected git commit; will use version string: '%s'\n" % version)
 
     return version, forcedVersion, gitVersion, initVersion
 

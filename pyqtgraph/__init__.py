@@ -4,13 +4,13 @@ PyQtGraph - Scientific Graphics and GUI Library for Python
 www.pyqtgraph.org
 """
 
-__version__ = '0.9.10'
+__version__ = '0.11.0.dev0'
 
 ### import all the goodies and add some helper functions for easy CLI use
 
 ## 'Qt' is a local module; it is intended mainly to cover up the differences
 ## between PyQt4 and PySide.
-from .Qt import QtGui
+from .Qt import QtGui, mkQApp
 
 ## not really safe--If we accidentally create another QApplication, the process hangs (and it is very difficult to trace the cause)
 #if QtGui.QApplication.instance() is None:
@@ -59,16 +59,32 @@ CONFIG_OPTIONS = {
     'exitCleanup': True,    ## Attempt to work around some exit crash bugs in PyQt and PySide
     'enableExperimental': False, ## Enable experimental features (the curious can search for this key in the code)
     'crashWarning': False,  # If True, print warnings about situations that may result in a crash
+    'imageAxisOrder': 'col-major',  # For 'row-major', image data is expected in the standard (row, col) order.
+                                 # For 'col-major', image data is expected in reversed (col, row) order.
+                                 # The default is 'col-major' for backward compatibility, but this may
+                                 # change in the future.
 } 
 
 
 def setConfigOption(opt, value):
+    global CONFIG_OPTIONS
+    if opt not in CONFIG_OPTIONS:
+        raise KeyError('Unknown configuration option "%s"' % opt)
+    if opt == 'imageAxisOrder' and value not in ('row-major', 'col-major'):
+        raise ValueError('imageAxisOrder must be either "row-major" or "col-major"')
     CONFIG_OPTIONS[opt] = value
 
 def setConfigOptions(**opts):
-    CONFIG_OPTIONS.update(opts)
+    """Set global configuration options. 
+    
+    Each keyword argument sets one global option. 
+    """
+    for k,v in opts.items():
+        setConfigOption(k, v)
 
 def getConfigOption(opt):
+    """Return the value of a single global configuration option.
+    """
     return CONFIG_OPTIONS[opt]
 
 
@@ -242,10 +258,12 @@ from .widgets.VerticalLabel import *
 from .widgets.FeedbackButton import * 
 from .widgets.ColorButton import * 
 from .widgets.DataTreeWidget import * 
+from .widgets.DiffTreeWidget import * 
 from .widgets.GraphicsView import * 
 from .widgets.LayoutWidget import * 
 from .widgets.TableWidget import * 
 from .widgets.ProgressDialog import *
+from .widgets.GroupBox import GroupBox
 
 from .imageview import *
 from .WidgetGroup import *
@@ -287,7 +305,10 @@ def cleanup():
     ## ALL QGraphicsItems must have a scene before they are deleted.
     ## This is potentially very expensive, but preferred over crashing.
     ## Note: this appears to be fixed in PySide as of 2012.12, but it should be left in for a while longer..
-    if QtGui.QApplication.instance() is None:
+    app = QtGui.QApplication.instance()
+    if app is None or not isinstance(app, QtGui.QApplication):
+        # app was never constructed is already deleted or is an
+        # QCoreApplication/QGuiApplication and not a full QApplication
         return
     import gc
     s = QtGui.QGraphicsScene()
@@ -300,7 +321,7 @@ def cleanup():
                         'are properly called before app shutdown (%s)\n' % (o,))
                 
                 s.addItem(o)
-        except RuntimeError:  ## occurs if a python wrapper no longer has its underlying C++ object
+        except (RuntimeError, ReferenceError):  ## occurs if a python wrapper no longer has its underlying C++ object
             continue
     _cleanupCalled = True
 
@@ -427,14 +448,22 @@ def dbg(*args, **kwds):
     except NameError:
         consoles = [c]
     return c
+
+
+def stack(*args, **kwds):
+    """
+    Create a console window and show the current stack trace.
     
-    
-def mkQApp():
-    global QAPP
-    inst = QtGui.QApplication.instance()
-    if inst is None:
-        QAPP = QtGui.QApplication([])
-    else:
-        QAPP = inst
-    return QAPP
-        
+    All arguments are passed to :func:`ConsoleWidget.__init__() <pyqtgraph.console.ConsoleWidget.__init__>`.
+    """
+    mkQApp()
+    from . import console
+    c = console.ConsoleWidget(*args, **kwds)
+    c.setStack()
+    c.show()
+    global consoles
+    try:
+        consoles.append(c)
+    except NameError:
+        consoles = [c]
+    return c

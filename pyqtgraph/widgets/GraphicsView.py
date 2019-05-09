@@ -5,7 +5,7 @@ Copyright 2010  Luke Campagnola
 Distributed under MIT/X11 license. See license.txt for more infomation.
 """
 
-from ..Qt import QtCore, QtGui, USE_PYSIDE
+from ..Qt import QtCore, QtGui, QT_LIB
 
 try:
     from ..Qt import QtOpenGL
@@ -63,7 +63,7 @@ class GraphicsView(QtGui.QGraphicsView):
                         :func:`mkColor <pyqtgraph.mkColor>`. By 
                         default, the background color is determined using the
                         'backgroundColor' configuration option (see 
-                        :func:`setConfigOption <pyqtgraph.setConfigOption>`.
+                        :func:`setConfigOptions <pyqtgraph.setConfigOptions>`).
         ==============  ============================================================
         """
         
@@ -115,7 +115,7 @@ class GraphicsView(QtGui.QGraphicsView):
         
         ## Workaround for PySide crash
         ## This ensures that the scene will outlive the view.
-        if USE_PYSIDE:
+        if QT_LIB == 'PySide':
             self.sceneObj._view_ref_workaround = self
         
         ## by default we set up a central widget with a grid layout.
@@ -362,7 +362,7 @@ class GraphicsView(QtGui.QGraphicsView):
     def mouseMoveEvent(self, ev):
         if self.lastMousePos is None:
             self.lastMousePos = Point(ev.pos())
-        delta = Point(ev.pos() - self.lastMousePos)
+        delta = Point(ev.pos() - QtCore.QPoint(*self.lastMousePos))
         self.lastMousePos = Point(ev.pos())
 
         QtGui.QGraphicsView.mouseMoveEvent(self, ev)
